@@ -7,7 +7,7 @@ const fs = require('fs');
 const connectDB = require('./config/db'); // MongoDB connection
 const authRoutes = require('./routes/auth');
 const skillRoutes = require('./routes/skill');
-const formRoutes = require('./routes/formRoutes');
+const formRoutes = require('./routes/formRoutes'); // Routes for handling form data
 
 // Initialize the Express app
 const app = express();
