@@ -15,8 +15,12 @@ const SkillSchema = new mongoose.Schema({
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'FormData', // Ensure it's correctly referring to the FormData model
-    required: false
+    ref: 'FormData', // Referring to the FormData model
+    required: false,
+  },
+  email: {
+    type: String,  // Email from session storage
+    required: true,  // Make this field required as we expect an email with every submission
   }
 });
 

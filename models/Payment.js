@@ -17,6 +17,10 @@ const PaymentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-}, { timestamps: true });
+    email: {  // New field to store the user's email
+        type: String,
+        required: true
+    }
+}, { timestamps: true });  // Timestamps will track creation and update times
 
 module.exports = mongoose.model('Payment', PaymentSchema);

@@ -20,6 +20,8 @@ connectDB();
 app.use(cors()); // Allow cross-origin requests
 app.use(bodyParser.json()); // Parse JSON bodies
 
+
+
 // Ensure required directories for file uploads exist
 const directories = [
   path.join(__dirname, 'uploads', 'profilePictures'),

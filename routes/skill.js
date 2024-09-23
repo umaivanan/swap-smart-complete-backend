@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
     const filetypes = /jpeg|jpg|png/;
@@ -30,16 +30,18 @@ const upload = multer({
   }
 });
 
-// POST route to add a new skill with an optional profile picture
+// POST route to add a new skill with an optional profile picture and email from session storage
 router.post('/', upload.single('profilePicture'), async (req, res) => {
-  const { profileName, skillCategory } = req.body;
+  const { profileName, skillCategory, email } = req.body;  // Email is passed from frontend
   const profilePicture = req.file ? `/uploads/profilePictures/${req.file.filename}` : null;
 
   try {
+    // Here you can associate the email with the new skill if needed
     const newSkill = new Skill({
       profileName,
       skillCategory,
-      profilePicture, // Save file path in MongoDB
+      profilePicture,
+      email, // Save the email to MongoDB
     });
     
     await newSkill.save();
@@ -59,8 +61,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// @route PATCH /api/skills/:skillId
-// @desc Update Skill with FormData ID
+// PATCH route to update Skill with FormData ID
 router.patch('/:skillId', async (req, res) => {
   try {
     const { formDataId } = req.body;
