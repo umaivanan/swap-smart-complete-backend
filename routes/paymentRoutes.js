@@ -65,7 +65,7 @@ router.post('/pay', async (req, res) => {
             email: userEmail,  // Save the user's email with the payment details
             payer: {},  // Initially empty, filled later on capture
             amount: paymentData.purchase_units[0].amount,
-            status: 'Pending'
+            status: 'sucesss'
         });
 
         await newPayment.save();  // Save the payment in MongoDB
@@ -114,7 +114,8 @@ router.get('/capture/:orderID', async (req, res) => {
             }
         );
 
-        const { payer, purchase_units } = captureResponse.data;
+        res.json(captureResponse.data);
+
 
         // Update payment in MongoDB after capture
         await Payment.findOneAndUpdate(
