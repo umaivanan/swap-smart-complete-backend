@@ -6,7 +6,6 @@ const router = express.Router();
 
 // Create PayPal Order
 router.post('/pay', async (req, res) => {
-    // Retrieve user email from session or request body (depending on your setup)
     const userEmail = req.session?.email || req.body.email;
 
     if (!userEmail) {
@@ -62,10 +61,10 @@ router.post('/pay', async (req, res) => {
         // Save the order in MongoDB
         const newPayment = new Payment({
             orderID,
-            email: userEmail,  // Save the user's email with the payment details
-            payer: {},  // Initially empty, filled later on capture
+            email: userEmail,
+            payer: {},
             amount: paymentData.purchase_units[0].amount,
-            status: 'sucesss'
+            status: 'Pending'
         });
 
         await newPayment.save();  // Save the payment in MongoDB
@@ -114,24 +113,29 @@ router.get('/capture/:orderID', async (req, res) => {
             }
         );
 
-        res.json(captureResponse.data);
-
+        // Extract necessary details from PayPal capture response
+        const { payer, purchase_units } = captureResponse.data;
+        const captureDetails = purchase_units[0].payments.captures[0];
 
         // Update payment in MongoDB after capture
-        await Payment.findOneAndUpdate(
+        const updatedPayment = await Payment.findOneAndUpdate(
             { orderID },
             {
                 payer: {
-                    name: payer.name.given_name + ' ' + payer.name.surname,
+                    name: `${payer.name.given_name} ${payer.name.surname}`,
                     email_address: payer.email_address
                 },
                 status: 'Completed',
-                captureDetails: purchase_units[0].payments.captures[0]
+                captureDetails: captureDetails
             },
             { new: true }
         );
 
-        res.json({ message: 'Payment captured successfully', data: captureResponse.data });
+        if (!updatedPayment) {
+            return res.status(404).json({ message: 'Payment record not found' });
+        }
+
+        res.json({ message: 'Payment captured successfully', data: updatedPayment });
 
     } catch (error) {
         console.error('Error capturing PayPal order:', error.response ? error.response.data : error);
@@ -143,7 +147,6 @@ router.get('/capture/:orderID', async (req, res) => {
 router.post('/success', async (req, res) => {
     const { email, paymentDetails } = req.body;
 
-    // Check if all required data is provided
     if (!email || !paymentDetails || !paymentDetails.id) {
         return res.status(400).json({ error: 'Missing required payment details' });
     }
@@ -153,7 +156,7 @@ router.post('/success', async (req, res) => {
         const orderID = paymentDetails.id;
         const payerName = `${paymentDetails.payer.name.given_name} ${paymentDetails.payer.name.surname}`;
         const payerEmail = paymentDetails.payer.email_address;
-        const captureDetails = paymentDetails.purchase_units[0].payments.captures[0];  // Assuming the data is structured this way
+        const captureDetails = paymentDetails.purchase_units[0].payments.captures[0];
 
         // Find the payment by orderID and update it with captured details
         const updatedPayment = await Payment.findOneAndUpdate(
@@ -166,7 +169,7 @@ router.post('/success', async (req, res) => {
                 status: 'Completed',
                 captureDetails: captureDetails
             },
-            { new: true }  // Return the updated document
+            { new: true }
         );
 
         if (!updatedPayment) {
