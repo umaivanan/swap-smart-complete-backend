@@ -121,4 +121,91 @@ router.get('/:id?', async (req, res) => {
   }
 });
 
+// @route PUT /api/formdata/:id
+// @desc Update form data by ID
+router.put('/:id', upload.fields([
+  { name: 'roadmapIntroduction', maxCount: 1 },
+  { name: 'firstChapter', maxCount: 1 },
+  { name: 'secondChapter', maxCount: 1 },
+  { name: 'thirdChapter', maxCount: 1 },
+  { name: 'fourthChapter', maxCount: 1 },
+  { name: 'fifthChapter', maxCount: 1 },
+  { name: 'sixthChapter', maxCount: 1 },
+  { name: 'seventhChapter', maxCount: 1 },
+  { name: 'eighthChapter', maxCount: 1 },
+  { name: 'ninthChapter', maxCount: 1 },
+  { name: 'tenthChapter', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      whereILive,
+      decadeBorn,
+      timeSpent,
+      work,
+      languages,
+      aboutMe
+    } = req.body;
+
+    // Find the existing form data
+    const existingFormData = await FormData.findById(id);
+    if (!existingFormData) {
+      return res.status(404).json({ message: 'Form data not found' });
+    }
+
+    // Update fields
+    existingFormData.whereILive = whereILive || existingFormData.whereILive;
+    existingFormData.decadeBorn = decadeBorn || existingFormData.decadeBorn;
+    existingFormData.timeSpent = timeSpent || existingFormData.timeSpent;
+    existingFormData.work = work || existingFormData.work;
+    existingFormData.languages = languages || existingFormData.languages;
+    existingFormData.aboutMe = aboutMe || existingFormData.aboutMe;
+
+    // Handle file uploads if they exist
+    if (req.files.roadmapIntroduction) {
+      existingFormData.roadmapIntroduction = req.files.roadmapIntroduction[0].filename;
+    }
+    if (req.files.firstChapter) {
+      existingFormData.firstChapter = req.files.firstChapter[0].filename;
+    }
+    if (req.files.secondChapter) {
+      existingFormData.secondChapter = req.files.secondChapter[0].filename;
+    }
+    if (req.files.thirdChapter) {
+      existingFormData.thirdChapter = req.files.thirdChapter[0].filename;
+    }
+    if (req.files.fourthChapter) {
+      existingFormData.fourthChapter = req.files.fourthChapter[0].filename;
+    }
+    if (req.files.fifthChapter) {
+      existingFormData.fifthChapter = req.files.fifthChapter[0].filename;
+    }
+    if (req.files.sixthChapter) {
+      existingFormData.sixthChapter = req.files.sixthChapter[0].filename;
+    }
+    if (req.files.seventhChapter) {
+      existingFormData.seventhChapter = req.files.seventhChapter[0].filename;
+    }
+    if (req.files.eighthChapter) {
+      existingFormData.eighthChapter = req.files.eighthChapter[0].filename;
+    }
+    if (req.files.ninthChapter) {
+      existingFormData.ninthChapter = req.files.ninthChapter[0].filename;
+    }
+    if (req.files.tenthChapter) {
+      existingFormData.tenthChapter = req.files.tenthChapter[0].filename;
+    }
+
+    // Save updated form data
+    await existingFormData.save();
+
+    res.status(200).json({ message: 'Form data updated successfully', formData: existingFormData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+module.exports = router;
+
 module.exports = router;
