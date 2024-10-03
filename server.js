@@ -8,8 +8,9 @@ const connectDB = require('./config/db'); // MongoDB connection
 const authRoutes = require('./routes/auth');
 const skillRoutes = require('./routes/skill');
 const formRoutes = require('./routes/formRoutes'); // Routes for handling form data
-const paymentRoutes=require('./routes/paymentRoutes')
+// const paymentRoutes=require('./routes/paymentRoutes')
 // Initialize the Express app
+
 const app = express();
 const PORT = process.env.PORT || 9500;
 
@@ -43,7 +44,7 @@ app.use('/pdfUploads', express.static(path.join(__dirname, 'pdfUploads')));
 app.use('/api/auth', authRoutes); // Authentication routes
 app.use('/api/skills', skillRoutes); // Skill routes
 app.use('/api/formdata', formRoutes); // Route for handling form data
-app.use('/api/paypal', require('./routes/paymentRoutes'));
+// app.use('/api/paypal', require('./routes/paymentRoutes'));
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -55,6 +56,8 @@ app.use((err, req, res, next) => {
 app.use((req, res, next) => {
   res.status(404).json({ message: 'Resource not found' });
 });
+
+
 
 // Start Server
 app.listen(PORT, () => {

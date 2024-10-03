@@ -107,8 +107,11 @@ router.post('/', upload.fields([
 
 // GET route to fetch form data by ID or all data
 router.get('/:id?', async (req, res) => {
+      // let id = req.params.id.trim();  // .trim() to remove newline or spaces
+
   try {
     const formData = req.params.id
+
       ? await FormData.findById(req.params.id).populate('skill')
       : await FormData.find().populate('skill');
 
@@ -120,6 +123,44 @@ router.get('/:id?', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+
+// router.get('/:id?', async (req, res) => {
+//   try {
+//     const formData = req.params.id
+//       ? await FormData.findById(req.params.id)
+//       : await FormData.find();
+
+//     if (!formData) {
+//       return res.status(404).json({ message: 'Resource not found' });
+//     }
+
+//     res.json(formData);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server Error', error: error.message });
+//   }
+// });
+
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params; // Get ID from request params
+
+    // Fetch form data with the associated skill using populate
+    const formData = await FormData.findById(id).populate('skill');
+
+    if (!formData) {
+      return res.status(404).json({ message: 'Resource not found' });
+    }
+
+    res.json(formData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+
 
 // @route PUT /api/formdata/:id
 // @desc Update form data by ID
@@ -206,6 +247,6 @@ router.put('/:id', upload.fields([
   }
 });
 
-module.exports = router;
+
 
 module.exports = router;
