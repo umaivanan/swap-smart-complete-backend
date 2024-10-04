@@ -30,26 +30,46 @@ const upload = multer({
   }
 });
 
-// POST route to add a new skill with an optional profile picture and email from session storage
+// // POST route to add a new skill with an optional profile picture and email from session storage
+// router.post('/', upload.single('profilePicture'), async (req, res) => {
+//   const { profileName, skillCategory, email } = req.body;  // Email is passed from frontend
+//   const profilePicture = req.file ? `/uploads/profilePictures/${req.file.filename}` : null;
+
+//   try {
+//     // Here you can associate the email with the new skill if needed
+//     const newSkill = new Skill({
+//       profileName,
+//       skillCategory,
+//       profilePicture,
+//       email, // Save the email to MongoDB
+//     });
+    
+//     await newSkill.save();
+//     res.status(201).json(newSkill);
+//   } catch (error) {
+//     res.status(400).json({ error: 'Unable to add skill' });
+//   }
+// });
 router.post('/', upload.single('profilePicture'), async (req, res) => {
   const { profileName, skillCategory, email } = req.body;  // Email is passed from frontend
   const profilePicture = req.file ? `/uploads/profilePictures/${req.file.filename}` : null;
 
   try {
-    // Here you can associate the email with the new skill if needed
-    const newSkill = new Skill({
+    // Here, `create()` function ensures a new document with a unique ID is created each time
+    const newSkill = await Skill.create({
       profileName,
       skillCategory,
       profilePicture,
       email, // Save the email to MongoDB
     });
     
-    await newSkill.save();
     res.status(201).json(newSkill);
   } catch (error) {
+    console.error('Error creating skill:', error);
     res.status(400).json({ error: 'Unable to add skill' });
   }
 });
+
 
 // Get all skills
 router.get('/', async (req, res) => {

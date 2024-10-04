@@ -77,7 +77,12 @@ const formDataSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Skill',  // Reference to Skill schema
     required: true 
-  }
+  },
+  // email: {
+  //   type: String,  // Email from session storage
+  //   required: true,  // Make this field required as we expect an email with every submission
+  // },
+
 }, {
   timestamps: true // Automatically create createdAt and updatedAt fields
 });

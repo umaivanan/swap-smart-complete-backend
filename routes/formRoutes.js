@@ -51,7 +51,8 @@ router.post('/', upload.fields([
       work,
       languages,
       aboutMe,
-      skillId
+      skillId,
+      // email
     } = req.body;
 
     // Check if the skill exists
@@ -81,6 +82,7 @@ router.post('/', upload.fields([
       work,
       languages,
       aboutMe,
+      // email,
       roadmapIntroduction,   // Save the roadmap introduction PDF file
       firstChapter,          // Save the first chapter PDF file
       secondChapter,         // Save the second chapter PDF file
@@ -93,6 +95,7 @@ router.post('/', upload.fields([
       ninthChapter,          // Save the ninth chapter PDF file
       tenthChapter,          // Save the tenth chapter PDF file
       skill: skillId         // Associate FormData with Skill ID
+    
     });
 
     // Save form data
