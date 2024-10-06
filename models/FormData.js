@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const formDataSchema = new mongoose.Schema({
@@ -25,47 +26,47 @@ const formDataSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  roadmapIntroduction: { // PDF for Roadmap Introduction
+  roadmapIntroduction: {
     type: String,
     required: false,
   },
-  firstChapter: { // PDF for First Chapter
+  firstChapter: {
     type: String,
     required: false,
   },
-  secondChapter: { // PDF for Second Chapter
+  secondChapter: {
     type: String,
     required: false,
   },
-  thirdChapter: { // PDF for Third Chapter
+  thirdChapter: {
     type: String,
     required: false,
   },
-  fourthChapter: { // PDF for Fourth Chapter
+  fourthChapter: {
     type: String,
     required: false,
   },
-  fifthChapter: { // PDF for Fifth Chapter
+  fifthChapter: {
     type: String,
     required: false,
   },
-  sixthChapter: { // PDF for Sixth Chapter
+  sixthChapter: {
     type: String,
     required: false,
   },
-  seventhChapter: { // PDF for Seventh Chapter
+  seventhChapter: {
     type: String,
     required: false,
   },
-  eighthChapter: { // PDF for Eighth Chapter
+  eighthChapter: {
     type: String,
     required: false,
   },
-  ninthChapter: { // PDF for Ninth Chapter
+  ninthChapter: {
     type: String,
     required: false,
   },
-  tenthChapter: { // PDF for Tenth Chapter
+  tenthChapter: {
     type: String,
     required: false,
   },
@@ -73,18 +74,13 @@ const formDataSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  skill: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Skill',  // Reference to Skill schema
-    required: true 
-  },
-  // email: {
-  //   type: String,  // Email from session storage
-  //   required: true,  // Make this field required as we expect an email with every submission
-  // },
-
+  skill: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Skill',
+    required: true
+  }
 }, {
-  timestamps: true // Automatically create createdAt and updatedAt fields
+  timestamps: true
 });
 
 module.exports = mongoose.model('FormData', formDataSchema);

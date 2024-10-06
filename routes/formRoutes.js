@@ -1,14 +1,15 @@
+
 const express = require('express');
-const router = express.Router();
 const multer = require('multer');
+const router = express.Router();
 const FormData = require('../models/FormData');
-const Skill = require('../models/skills'); // Ensure you have a Skill model
+const Skill = require('../models/skills');
 const path = require('path');
 
-// Configure multer for file uploads to the 'pdfUploads' folder
+// Configure multer for PDF uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'pdfUploads/'); // Store PDFs in 'pdfUploads' folder
+    cb(null, 'pdfUploads/');
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -27,9 +28,7 @@ const upload = multer({
   }
 });
 
-// @route POST /api/formdata
-// @desc Save form data to the database and associate it with a skill
-// Handle multiple individual PDF files for each chapter and roadmap introduction
+// POST route for creating form data and associating with skill
 router.post('/', upload.fields([
   { name: 'roadmapIntroduction', maxCount: 1 },
   { name: 'firstChapter', maxCount: 1 },
@@ -51,8 +50,7 @@ router.post('/', upload.fields([
       work,
       languages,
       aboutMe,
-      skillId,
-      // email
+      skillId
     } = req.body;
 
     // Check if the skill exists
@@ -61,20 +59,7 @@ router.post('/', upload.fields([
       return res.status(404).json({ message: 'Skill not found' });
     }
 
-    // Get filenames of uploaded PDF files
-    const roadmapIntroduction = req.files.roadmapIntroduction ? req.files.roadmapIntroduction[0].filename : null;
-    const firstChapter = req.files.firstChapter ? req.files.firstChapter[0].filename : null;
-    const secondChapter = req.files.secondChapter ? req.files.secondChapter[0].filename : null;
-    const thirdChapter = req.files.thirdChapter ? req.files.thirdChapter[0].filename : null;
-    const fourthChapter = req.files.fourthChapter ? req.files.fourthChapter[0].filename : null;
-    const fifthChapter = req.files.fifthChapter ? req.files.fifthChapter[0].filename : null;
-    const sixthChapter = req.files.sixthChapter ? req.files.sixthChapter[0].filename : null;
-    const seventhChapter = req.files.seventhChapter ? req.files.seventhChapter[0].filename : null;
-    const eighthChapter = req.files.eighthChapter ? req.files.eighthChapter[0].filename : null;
-    const ninthChapter = req.files.ninthChapter ? req.files.ninthChapter[0].filename : null;
-    const tenthChapter = req.files.tenthChapter ? req.files.tenthChapter[0].filename : null;
-
-    // Create a new FormData entry with the skill ID
+    // Create new FormData entry with skill association
     const newFormData = new FormData({
       whereILive,
       decadeBorn,
@@ -82,24 +67,25 @@ router.post('/', upload.fields([
       work,
       languages,
       aboutMe,
-      // email,
-      roadmapIntroduction,   // Save the roadmap introduction PDF file
-      firstChapter,          // Save the first chapter PDF file
-      secondChapter,         // Save the second chapter PDF file
-      thirdChapter,          // Save the third chapter PDF file
-      fourthChapter,         // Save the fourth chapter PDF file
-      fifthChapter,          // Save the fifth chapter PDF file
-      sixthChapter,          // Save the sixth chapter PDF file
-      seventhChapter,        // Save the seventh chapter PDF file
-      eighthChapter,         // Save the eighth chapter PDF file
-      ninthChapter,          // Save the ninth chapter PDF file
-      tenthChapter,          // Save the tenth chapter PDF file
-      skill: skillId         // Associate FormData with Skill ID
-    
+      roadmapIntroduction: req.files.roadmapIntroduction ? req.files.roadmapIntroduction[0].filename : null,
+      firstChapter: req.files.firstChapter ? req.files.firstChapter[0].filename : null,
+      secondChapter: req.files.secondChapter ? req.files.secondChapter[0].filename : null,
+      thirdChapter: req.files.thirdChapter ? req.files.thirdChapter[0].filename : null,
+      fourthChapter: req.files.fourthChapter ? req.files.fourthChapter[0].filename : null,
+      fifthChapter: req.files.fifthChapter ? req.files.fifthChapter[0].filename : null,
+      sixthChapter: req.files.sixthChapter ? req.files.sixthChapter[0].filename : null,
+      seventhChapter: req.files.seventhChapter ? req.files.seventhChapter[0].filename : null,
+      eighthChapter: req.files.eighthChapter ? req.files.eighthChapter[0].filename : null,
+      ninthChapter: req.files.ninthChapter ? req.files.ninthChapter[0].filename : null,
+      tenthChapter: req.files.tenthChapter ? req.files.tenthChapter[0].filename : null,
+      skill: skill._id
     });
 
-    // Save form data
     await newFormData.save();
+
+    // Associate FormData ID with the Skill
+    skill.formDataId = newFormData._id;
+    await skill.save();
 
     res.status(201).json({ message: 'Form data saved successfully', formData: newFormData });
   } catch (error) {
@@ -108,13 +94,10 @@ router.post('/', upload.fields([
   }
 });
 
-// GET route to fetch form data by ID or all data
+// Get form data by ID
 router.get('/:id?', async (req, res) => {
-      // let id = req.params.id.trim();  // .trim() to remove newline or spaces
-
   try {
     const formData = req.params.id
-
       ? await FormData.findById(req.params.id).populate('skill')
       : await FormData.find().populate('skill');
 
@@ -127,46 +110,7 @@ router.get('/:id?', async (req, res) => {
   }
 });
 
-
-// router.get('/:id?', async (req, res) => {
-//   try {
-//     const formData = req.params.id
-//       ? await FormData.findById(req.params.id)
-//       : await FormData.find();
-
-//     if (!formData) {
-//       return res.status(404).json({ message: 'Resource not found' });
-//     }
-
-//     res.json(formData);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: 'Server Error', error: error.message });
-//   }
-// });
-
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params; // Get ID from request params
-
-    // Fetch form data with the associated skill using populate
-    const formData = await FormData.findById(id).populate('skill');
-
-    if (!formData) {
-      return res.status(404).json({ message: 'Resource not found' });
-    }
-
-    res.json(formData);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server Error', error: error.message });
-  }
-});
-
-
-
-// @route PUT /api/formdata/:id
-// @desc Update form data by ID
+// Update form data
 router.put('/:id', upload.fields([
   { name: 'roadmapIntroduction', maxCount: 1 },
   { name: 'firstChapter', maxCount: 1 },
@@ -191,13 +135,11 @@ router.put('/:id', upload.fields([
       aboutMe
     } = req.body;
 
-    // Find the existing form data
     const existingFormData = await FormData.findById(id);
     if (!existingFormData) {
       return res.status(404).json({ message: 'Form data not found' });
     }
 
-    // Update fields
     existingFormData.whereILive = whereILive || existingFormData.whereILive;
     existingFormData.decadeBorn = decadeBorn || existingFormData.decadeBorn;
     existingFormData.timeSpent = timeSpent || existingFormData.timeSpent;
@@ -205,7 +147,7 @@ router.put('/:id', upload.fields([
     existingFormData.languages = languages || existingFormData.languages;
     existingFormData.aboutMe = aboutMe || existingFormData.aboutMe;
 
-    // Handle file uploads if they exist
+    // Update files if present
     if (req.files.roadmapIntroduction) {
       existingFormData.roadmapIntroduction = req.files.roadmapIntroduction[0].filename;
     }
@@ -240,7 +182,6 @@ router.put('/:id', upload.fields([
       existingFormData.tenthChapter = req.files.tenthChapter[0].filename;
     }
 
-    // Save updated form data
     await existingFormData.save();
 
     res.status(200).json({ message: 'Form data updated successfully', formData: existingFormData });
@@ -249,7 +190,5 @@ router.put('/:id', upload.fields([
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-
-
 
 module.exports = router;

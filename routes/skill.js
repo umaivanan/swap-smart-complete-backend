@@ -1,17 +1,19 @@
+
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const Skill = require('../models/skills');
 const FormData = require('../models/FormData');
 const path = require('path');
+const mongoose = require('mongoose');
 
-// Configure multer for file uploads
+// Configure multer for profile picture uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/profilePictures'); // Directory where files will be saved
+    cb(null, 'uploads/profilePictures');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Save files with a timestamp to avoid name collisions
+    cb(null, `${Date.now()}-${file.originalname}`);
   }
 });
 
@@ -21,55 +23,13 @@ const upload = multer({
     const filetypes = /jpeg|jpg|png/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = filetypes.test(file.mimetype);
-
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
+      cb(new Error('Only .png, .jpg, and .jpeg format allowed!'));
     }
   }
 });
-
-// // POST route to add a new skill with an optional profile picture and email from session storage
-// router.post('/', upload.single('profilePicture'), async (req, res) => {
-//   const { profileName, skillCategory, email } = req.body;  // Email is passed from frontend
-//   const profilePicture = req.file ? `/uploads/profilePictures/${req.file.filename}` : null;
-
-//   try {
-//     // Here you can associate the email with the new skill if needed
-//     const newSkill = new Skill({
-//       profileName,
-//       skillCategory,
-//       profilePicture,
-//       email, // Save the email to MongoDB
-//     });
-    
-//     await newSkill.save();
-//     res.status(201).json(newSkill);
-//   } catch (error) {
-//     res.status(400).json({ error: 'Unable to add skill' });
-//   }
-// });
-router.post('/', upload.single('profilePicture'), async (req, res) => {
-  const { profileName, skillCategory, email } = req.body;  // Email is passed from frontend
-  const profilePicture = req.file ? `/uploads/profilePictures/${req.file.filename}` : null;
-
-  try {
-    // Here, `create()` function ensures a new document with a unique ID is created each time
-    const newSkill = await Skill.create({
-      profileName,
-      skillCategory,
-      profilePicture,
-      email, // Save the email to MongoDB
-    });
-    
-    res.status(201).json(newSkill);
-  } catch (error) {
-    console.error('Error creating skill:', error);
-    res.status(400).json({ error: 'Unable to add skill' });
-  }
-});
-
 
 // Get all skills
 router.get('/', async (req, res) => {
@@ -81,22 +41,53 @@ router.get('/', async (req, res) => {
   }
 });
 
-// PATCH route to update Skill with FormData ID
+// POST route for creating a skill
+router.post('/', upload.single('profilePicture'), async (req, res) => {
+  const { profileName, skillCategory, email } = req.body;
+  const profilePicture = req.file ? `/uploads/profilePictures/${req.file.filename}` : null;
+
+  try {
+    const newSkill = await Skill.create({
+      profileName,
+      skillCategory,
+      profilePicture,
+      email,
+      submittedStatus: true
+    });
+    res.status(201).json(newSkill);
+  } catch (error) {
+    console.error('Error creating skill:', error);
+    res.status(400).json({ error: 'Unable to add skill' });
+  }
+});
+
+// Route to check if form is already submitted
+router.post('/check-form', async (req, res) => {
+  const { email } = req.body;
+  try {
+    const existingUser = await Skill.findOne({ email });
+    if (existingUser && existingUser.submittedStatus) {
+      return res.status(200).json({ formSubmitted: true });
+    }
+    return res.status(200).json({ formSubmitted: false });
+  } catch (error) {
+    console.error('Error checking form submission status:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PATCH route to update submitted status for a skill
 router.patch('/:skillId', async (req, res) => {
   try {
-    const { formDataId } = req.body;
-
-    // Find the Skill by ID and update its 'user' field with the FormData ID
+    const { submittedStatus } = req.body;
     const updatedSkill = await Skill.findByIdAndUpdate(
       req.params.skillId,
-      { user: formDataId }, // Ensure you're updating the correct field
+      { submittedStatus: submittedStatus },
       { new: true }
     );
-
     if (!updatedSkill) {
       return res.status(404).json({ message: 'Skill not found' });
     }
-
     res.json(updatedSkill);
   } catch (error) {
     console.error('Error updating Skill:', error);

@@ -1,3 +1,6 @@
+
+
+
 const mongoose = require('mongoose');
 
 const SkillSchema = new mongoose.Schema({
@@ -13,17 +16,21 @@ const SkillSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'FormData', // Referring to the FormData model
-    required: false,
-  },
   email: {
-    type: String,  // Email from session storage
-    required: true,  // Make this field required as we expect an email with every submission
+    type: String,
+    required: true,
+    unique: true,  // Ensure email is unique
+  },
+  submittedStatus: {
+    type: Boolean,
+    default: false,
+  },
+  formDataId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FormData',
+    required: false
   }
 });
 
 const Skill = mongoose.model('Skill', SkillSchema);
-
 module.exports = Skill;
