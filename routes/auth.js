@@ -68,17 +68,15 @@ router.post('/login', async (req, res) => {
 // Get user by ID
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
-
     try {
-        const user = await User.findById(id);
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        // Send back user details (without password hash)
-        res.json({ id: user._id, name: user.name, email: user.email, role: user.role });
+      const user = await User.findById(id);
+      if (!user) return res.status(404).json({ error: 'User not found' }); // இது 404 பதில் அளிக்கும்
+  
+      res.json({ id: user._id, name: user.name, email: user.email, role: user.role });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+      res.status(500).json({ error: 'Server error' });
     }
-});
+  });
 
 // Update User by ID
 router.put('/:id', async (req, res) => {
