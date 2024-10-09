@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const formDataSchema = new mongoose.Schema({
@@ -69,6 +68,10 @@ const formDataSchema = new mongoose.Schema({
   tenthChapter: {
     type: String,
     required: false,
+  },
+  pdfPrice: {
+    type: Number, // Adding pdfPrice field
+    required: true, // You can set this to false if it's optional
   },
   createdAt: {
     type: Date,

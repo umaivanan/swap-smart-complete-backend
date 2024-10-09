@@ -50,6 +50,8 @@ router.post('/', upload.fields([
       work,
       languages,
       aboutMe,
+      pdfPrice, // Single price field for all PDFs
+
       skillId
     } = req.body;
 
@@ -78,6 +80,8 @@ router.post('/', upload.fields([
       eighthChapter: req.files.eighthChapter ? req.files.eighthChapter[0].filename : null,
       ninthChapter: req.files.ninthChapter ? req.files.ninthChapter[0].filename : null,
       tenthChapter: req.files.tenthChapter ? req.files.tenthChapter[0].filename : null,
+      pdfPrice, // Store the price of the PDFs
+
       skill: skill._id
     });
 
@@ -132,7 +136,9 @@ router.put('/:id', upload.fields([
       timeSpent,
       work,
       languages,
-      aboutMe
+      aboutMe,
+      pdfPrice // Single price field for all PDFs
+
     } = req.body;
 
     const existingFormData = await FormData.findById(id);
@@ -146,6 +152,8 @@ router.put('/:id', upload.fields([
     existingFormData.work = work || existingFormData.work;
     existingFormData.languages = languages || existingFormData.languages;
     existingFormData.aboutMe = aboutMe || existingFormData.aboutMe;
+    existingFormData.pdfPrice = pdfPrice || existingFormData.pdfPrice; // Update the PDF price
+
 
     // Update files if present
     if (req.files.roadmapIntroduction) {

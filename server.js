@@ -7,7 +7,9 @@ const fs = require('fs');
 const connectDB = require('./config/db'); // MongoDB connection
 const authRoutes = require('./routes/auth');
 const skillRoutes = require('./routes/skill');
-const formRoutes = require('./routes/formRoutes'); // Routes for handling form data
+const formRoutes = require('./routes/formRoutes'); // Routes for handling form 
+const stripeRoutes = require('./routes/stripeRoutes');  // Import the Stripe routes
+
 
 // const paymentRoutes=require('./routes/paymentRoutes')
 // Initialize the Express app
@@ -21,6 +23,7 @@ connectDB();
 // Middleware
 app.use(cors()); // Allow cross-origin requests
 app.use(bodyParser.json()); // Parse JSON bodies
+app.use(express.json());
 
 
 
@@ -45,6 +48,9 @@ app.use('/pdfUploads', express.static(path.join(__dirname, 'pdfUploads')));
 app.use('/api/auth', authRoutes); // Authentication routes
 app.use('/api/skills', skillRoutes); // Skill routes
 app.use('/api/formdata', formRoutes); // Route for handling form data
+app.use('/payment', stripeRoutes);
+
+
 
 // app.use('/api/paypal', require('./routes/paymentRoutes'));
 
@@ -59,6 +65,10 @@ app.use((req, res, next) => {
   res.status(404).json({ message: 'Resource not found' });
 });
 
+// app.post("/payment",(req,res)=>{
+//   console.log(req.body);
+//   res.send("Payment Successfull");
+// })
 
 
 // Start Server
