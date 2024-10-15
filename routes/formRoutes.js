@@ -131,4 +131,27 @@ router.get('/', async (req, res) => {
   }
 });
 
+// DELETE route to remove form data by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const formDataId = req.params.id;
+
+    // Find and delete the form data by ID
+    const deletedFormData = await FormData.findByIdAndDelete(formDataId);
+
+    if (!deletedFormData) {
+      return res.status(404).json({ message: 'Form data not found' });
+    }
+
+    // Optionally, remove the association with the skill (if required)
+    await Skill.updateMany({ formDataId: formDataId }, { $unset: { formDataId: '' } });
+
+    res.json({ message: 'Form data deleted successfully', formData: deletedFormData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error deleting form data', error: error.message });
+  }
+});
+
+
 module.exports = router;
