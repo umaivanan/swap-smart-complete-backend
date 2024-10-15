@@ -43,7 +43,7 @@ router.get('/', async (req, res) => {
 
 // POST route for creating a skill
 router.post('/', upload.single('profilePicture'), async (req, res) => {
-  const { profileName, skillCategory, email } = req.body;
+  const { profileName, skillCategory, email, preferredLanguage, educationalBackground } = req.body;
   const profilePicture = req.file ? `/uploads/profilePictures/${req.file.filename}` : null;
 
   try {
@@ -52,6 +52,8 @@ router.post('/', upload.single('profilePicture'), async (req, res) => {
       skillCategory,
       profilePicture,
       email,
+      preferredLanguage,          // Add preferredLanguage to the skill creation
+      educationalBackground,      // Add educationalBackground to the skill creation
       submittedStatus: true
     });
     res.status(201).json(newSkill);
@@ -60,6 +62,7 @@ router.post('/', upload.single('profilePicture'), async (req, res) => {
     res.status(400).json({ error: 'Unable to add skill' });
   }
 });
+
 
 // Route to check if form is already submitted
 router.post('/check-form', async (req, res) => {

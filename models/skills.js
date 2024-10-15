@@ -25,10 +25,18 @@ const SkillSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  preferredLanguage: {   // Add preferredLanguage to the schema
+    type: String,
+    required: true,
+  },
+  educationalBackground: {  // Add educationalBackground to the schema
+    type: String,
+    required: true,
+  },
   formDataId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'FormData',
-    required: false
+    required: false,
   }
 });
 

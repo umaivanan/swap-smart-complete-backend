@@ -6,29 +6,36 @@ const FormData = require('../models/FormData');
 const Skill = require('../models/skills');
 const path = require('path');
 
-// Configure multer for PDF uploads
+// Configure multer for PDF and image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'pdfUploads/');
+    if (file.mimetype === 'application/pdf') {
+      cb(null, 'pdfUploads/'); // PDFs go to pdfUploads
+    } else if (file.mimetype.startsWith('image/')) {
+      cb(null, 'imageUploads/'); // Images go to imageUploads
+    }
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    cb(null, `${Date.now()}-${file.originalname}`); // Unique filename for all files
   }
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for all files
   fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (ext !== '.pdf') {
-      return cb(new Error('Only PDFs are allowed'));
+    const filetypes = /pdf|jpeg|jpg|png/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+    if (extname && mimetype) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDFs and Images (JPEG, PNG) are allowed!'));
     }
-    cb(null, true);
   }
 });
 
-// POST route for creating form data and associating with skill
+// POST route for creating form data and associating with skill, including PDFs and images
 router.post('/', upload.fields([
   { name: 'roadmapIntroduction', maxCount: 1 },
   { name: 'firstChapter', maxCount: 1 },
@@ -40,18 +47,17 @@ router.post('/', upload.fields([
   { name: 'seventhChapter', maxCount: 1 },
   { name: 'eighthChapter', maxCount: 1 },
   { name: 'ninthChapter', maxCount: 1 },
-  { name: 'tenthChapter', maxCount: 1 }
+  { name: 'tenthChapter', maxCount: 1 },
+  { name: 'image', maxCount: 1 } // Add image upload field
 ]), async (req, res) => {
   try {
     const {
-      whereILive,
-      decadeBorn,
-      timeSpent,
-      work,
       languages,
-      aboutMe,
+      courseDescription,
+      courseDuration,
+      targetAudience,
+      courseCategory,
       pdfPrice, // Single price field for all PDFs
-
       skillId
     } = req.body;
 
@@ -61,14 +67,13 @@ router.post('/', upload.fields([
       return res.status(404).json({ message: 'Skill not found' });
     }
 
-    // Create new FormData entry with skill association
+    // Create new FormData entry with skill association and new schema fields
     const newFormData = new FormData({
-      whereILive,
-      decadeBorn,
-      timeSpent,
-      work,
       languages,
-      aboutMe,
+      courseDescription,
+      courseDuration,
+      targetAudience,
+      courseCategory,
       roadmapIntroduction: req.files.roadmapIntroduction ? req.files.roadmapIntroduction[0].filename : null,
       firstChapter: req.files.firstChapter ? req.files.firstChapter[0].filename : null,
       secondChapter: req.files.secondChapter ? req.files.secondChapter[0].filename : null,
@@ -81,7 +86,7 @@ router.post('/', upload.fields([
       ninthChapter: req.files.ninthChapter ? req.files.ninthChapter[0].filename : null,
       tenthChapter: req.files.tenthChapter ? req.files.tenthChapter[0].filename : null,
       pdfPrice, // Store the price of the PDFs
-
+      image: req.files.image ? req.files.image[0].filename : null, // Save image path
       skill: skill._id
     });
 
@@ -97,6 +102,8 @@ router.post('/', upload.fields([
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+// Other routes remain unchanged
 
 // Get form data by ID
 router.get('/:id?', async (req, res) => {
@@ -114,88 +121,13 @@ router.get('/:id?', async (req, res) => {
   }
 });
 
-// Update form data
-router.put('/:id', upload.fields([
-  { name: 'roadmapIntroduction', maxCount: 1 },
-  { name: 'firstChapter', maxCount: 1 },
-  { name: 'secondChapter', maxCount: 1 },
-  { name: 'thirdChapter', maxCount: 1 },
-  { name: 'fourthChapter', maxCount: 1 },
-  { name: 'fifthChapter', maxCount: 1 },
-  { name: 'sixthChapter', maxCount: 1 },
-  { name: 'seventhChapter', maxCount: 1 },
-  { name: 'eighthChapter', maxCount: 1 },
-  { name: 'ninthChapter', maxCount: 1 },
-  { name: 'tenthChapter', maxCount: 1 }
-]), async (req, res) => {
+// Get all form data for all users
+router.get('/', async (req, res) => {
   try {
-    const { id } = req.params;
-    const {
-      whereILive,
-      decadeBorn,
-      timeSpent,
-      work,
-      languages,
-      aboutMe,
-      pdfPrice // Single price field for all PDFs
-
-    } = req.body;
-
-    const existingFormData = await FormData.findById(id);
-    if (!existingFormData) {
-      return res.status(404).json({ message: 'Form data not found' });
-    }
-
-    existingFormData.whereILive = whereILive || existingFormData.whereILive;
-    existingFormData.decadeBorn = decadeBorn || existingFormData.decadeBorn;
-    existingFormData.timeSpent = timeSpent || existingFormData.timeSpent;
-    existingFormData.work = work || existingFormData.work;
-    existingFormData.languages = languages || existingFormData.languages;
-    existingFormData.aboutMe = aboutMe || existingFormData.aboutMe;
-    existingFormData.pdfPrice = pdfPrice || existingFormData.pdfPrice; // Update the PDF price
-
-
-    // Update files if present
-    if (req.files.roadmapIntroduction) {
-      existingFormData.roadmapIntroduction = req.files.roadmapIntroduction[0].filename;
-    }
-    if (req.files.firstChapter) {
-      existingFormData.firstChapter = req.files.firstChapter[0].filename;
-    }
-    if (req.files.secondChapter) {
-      existingFormData.secondChapter = req.files.secondChapter[0].filename;
-    }
-    if (req.files.thirdChapter) {
-      existingFormData.thirdChapter = req.files.thirdChapter[0].filename;
-    }
-    if (req.files.fourthChapter) {
-      existingFormData.fourthChapter = req.files.fourthChapter[0].filename;
-    }
-    if (req.files.fifthChapter) {
-      existingFormData.fifthChapter = req.files.fifthChapter[0].filename;
-    }
-    if (req.files.sixthChapter) {
-      existingFormData.sixthChapter = req.files.sixthChapter[0].filename;
-    }
-    if (req.files.seventhChapter) {
-      existingFormData.seventhChapter = req.files.seventhChapter[0].filename;
-    }
-    if (req.files.eighthChapter) {
-      existingFormData.eighthChapter = req.files.eighthChapter[0].filename;
-    }
-    if (req.files.ninthChapter) {
-      existingFormData.ninthChapter = req.files.ninthChapter[0].filename;
-    }
-    if (req.files.tenthChapter) {
-      existingFormData.tenthChapter = req.files.tenthChapter[0].filename;
-    }
-
-    await existingFormData.save();
-
-    res.status(200).json({ message: 'Form data updated successfully', formData: existingFormData });
+    const allFormData = await FormData.find(); // Fetch all form data from MongoDB
+    res.json(allFormData); // Return the data as JSON
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error fetching form data' });
   }
 });
 

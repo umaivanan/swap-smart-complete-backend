@@ -89,7 +89,6 @@ const skillRoutes = require('./routes/skill');
 const formRoutes = require('./routes/formRoutes'); // Routes for handling form data
 const paymentRoutes = require('./routes/paymentRoutes');
 
-
 // Initialize the Express app
 const app = express();
 const PORT = process.env.PORT || 9500;
@@ -100,12 +99,13 @@ connectDB();
 // Middleware
 app.use(cors()); // Allow cross-origin requests
 app.use(bodyParser.json()); // Parse JSON bodies
-app.use(express.json());
+app.use(express.json()); // Parse JSON encoded data
 
 // Ensure required directories for file uploads exist
 const directories = [
   path.join(__dirname, 'uploads', 'profilePictures'),
   path.join(__dirname, 'pdfUploads'), // Directory for PDFs
+  path.join(__dirname, 'imageUploads'), // Directory for Images (NEW for imageUploads)
 ];
 
 // Create directories if they don't exist
@@ -115,9 +115,10 @@ directories.forEach((dir) => {
   }
 });
 
-// Serve static files from the 'uploads' and 'pdfUploads' folders
+// Serve static files from the 'uploads', 'pdfUploads', and 'imageUploads' folders
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfUploads', express.static(path.join(__dirname, 'pdfUploads')));
+app.use('/imageUploads', express.static(path.join(__dirname, 'imageUploads'))); // Serve image files (NEW)
 
 // Routes
 app.use('/api/auth', authRoutes); // Authentication routes

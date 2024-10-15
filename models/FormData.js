@@ -1,29 +1,27 @@
+
+
 const mongoose = require('mongoose');
 
 const formDataSchema = new mongoose.Schema({
-  whereILive: {
-    type: String,
-    required: true,
-  },
-  decadeBorn: {
-    type: String,
-    required: true,
-  },
-  timeSpent: {
-    type: String,
-    required: true,
-  },
-  work: {
-    type: String,
-    required: true,
-  },
   languages: {
     type: String,
     required: true,
   },
-  aboutMe: {
+  courseDescription: {
     type: String,
-    required: true,
+    required: true, // Assuming this field is required
+  },
+  courseDuration: {
+    type: String,
+    required: true, // Assuming this field is required
+  },
+  targetAudience: {
+    type: String,
+    required: true, // Assuming this field is required
+  },
+  courseCategory: {
+    type: String,
+    required: true, // Assuming this field is required
   },
   roadmapIntroduction: {
     type: String,
@@ -73,6 +71,10 @@ const formDataSchema = new mongoose.Schema({
     type: Number, // Adding pdfPrice field
     required: true, // You can set this to false if it's optional
   },
+  image: {
+    type: String, // This will store the image URL as a string
+    required: false, // Set to true if the image is mandatory
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -80,7 +82,7 @@ const formDataSchema = new mongoose.Schema({
   skill: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Skill',
-    required: true
+    required: true,
   }
 }, {
   timestamps: true
