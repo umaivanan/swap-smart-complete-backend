@@ -1,11 +1,8 @@
-
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const Skill = require('../models/skills');
-const FormData = require('../models/FormData');
 const path = require('path');
-const mongoose = require('mongoose');
 
 // Configure multer for profile picture uploads
 const storage = multer.diskStorage({
@@ -31,13 +28,28 @@ const upload = multer({
   }
 });
 
-// Get all skills
+// Get all skills or by email if provided
 router.get('/', async (req, res) => {
+  const { email } = req.query;
   try {
-    const skills = await Skill.find();
+    const skills = email ? await Skill.findOne({ email }) : await Skill.find();
     res.json(skills);
   } catch (error) {
     res.status(500).json({ error: 'Unable to fetch skills' });
+  }
+});
+
+// GET route to fetch skill details by skillId
+router.get('/:skillId', async (req, res) => {
+  try {
+    const skill = await Skill.findById(req.params.skillId);
+    if (!skill) {
+      return res.status(404).json({ message: 'Skill not found' });
+    }
+    res.json(skill);
+  } catch (error) {
+    console.error('Error fetching skill:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -49,11 +61,11 @@ router.post('/', upload.single('profilePicture'), async (req, res) => {
   try {
     const newSkill = await Skill.create({
       profileName,
-      skillCategory,
+      // skillCategory,
       profilePicture,
       email,
-      preferredLanguage,          // Add preferredLanguage to the skill creation
-      educationalBackground,      // Add educationalBackground to the skill creation
+      preferredLanguage,
+      educationalBackground,
       submittedStatus: true
     });
     res.status(201).json(newSkill);
@@ -62,7 +74,6 @@ router.post('/', upload.single('profilePicture'), async (req, res) => {
     res.status(400).json({ error: 'Unable to add skill' });
   }
 });
-
 
 // Route to check if form is already submitted
 router.post('/check-form', async (req, res) => {
@@ -85,7 +96,7 @@ router.patch('/:skillId', async (req, res) => {
     const { submittedStatus } = req.body;
     const updatedSkill = await Skill.findByIdAndUpdate(
       req.params.skillId,
-      { submittedStatus: submittedStatus },
+      { submittedStatus },
       { new: true }
     );
     if (!updatedSkill) {

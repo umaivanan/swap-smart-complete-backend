@@ -8,10 +8,10 @@ const SkillSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  skillCategory: {
-    type: String,
-    required: true,
-  },
+  // skillCategory: {
+  //   type: String,
+  //   required: true,
+  // },
   profilePicture: {
     type: String,
     required: false,
